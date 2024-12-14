@@ -9,7 +9,6 @@ db.prepare(`CREATE TABLE IF NOT EXISTS tasks (
 `)
 .run();
 
-console.log('Tabulka "tasks" byla vytvořena nebo již existuje.');
 
 
 export function addTaskToDb(task, description = null, status = 'pending') {
