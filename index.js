@@ -1,14 +1,14 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { addTaskToDb, getAllTasksFromDb, changeTaskStatus } from './db.js';
+import { addTaskToDb, getAllTasksFromDb, changeTaskStatus, deleteTaskFromDb, updateTaskInDb } from './db.js';
 
 const mainMenu = async () => {
-    console.log(chalk.blue.bold('Welcome to Life Planner CLI!'));
+    console.log(chalk.blue.bold('Life Planner CLI!'));
     console.log()
 
     const choices = [
         'Add a new task',
-        'View tasks',
+        'View all tasks',
         'Exit',
     ];
 
@@ -25,7 +25,7 @@ const mainMenu = async () => {
         case 'Add a new task':
             await addTask();
             break;
-        case 'View tasks':
+        case 'View all tasks':
             await viewTasks();
             break;
         case 'Exit':
@@ -51,7 +51,7 @@ const addTask = async () => {
     ])
 
     addTaskToDb(task, description)
-
+    console.clear()
     console.log(chalk.green(`Task added: "${task}"`));
 };
 
@@ -59,13 +59,13 @@ const viewTasks = async () => {
     const allTasks = getAllTasksFromDb();
 
     if (allTasks.length === 0) {
+        console.clear()
         console.log(chalk.red('You have no tasks'));
         return;
     }
 
     console.clear()
-    console.log(chalk.yellow('Here are your tasks:'));
-
+    console.log(chalk.yellow('All tasks:'));
 
     allTasks.forEach((taskObj, index) => {
         const {task, description, status} = taskObj
@@ -78,33 +78,95 @@ const viewTasks = async () => {
         } 
     })
 
+    console.log()
+
     const { action } = await inquirer.prompt([
         {
             type: 'list',
             name: 'action',
-            message: 'Would you like to:',
+            message: 'Select option:',
             choices: [
                 'Mark a task as done',
+                'Edit tasks',
                 'Go back to main menu',
             ],
         },
     ]);
 
     if (action === 'Mark a task as done') {
-        await markTaskAsDone(allTasks);
+        await markTaskFromListAsDone(allTasks);
+    }
+    if (action === 'Edit tasks') {
+        await editTasksView(allTasks);
     }
     if (action === 'Go back to main menu') {
+        console.clear()
         await mainMenu();
     }
 };
 
-const markTaskAsDone = async (allTasks) => {
+const editTasksView = async (allTasks) => {
+    console.clear()
+    const { selectedTask } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'selectedTask',
+            message: 'Select task for edit:',
+            choices: allTasks.map((task, index) => ({
+                name: `${task.task} ${task.status === 'pending' ? chalk.red('✗') : chalk.green('✓')}`,
+                value: task,
+            }))
+        }
+    ])
+    console.log(`${chalk.yellow('Task detail:')}
+    ${chalk.yellow('Task:')} ${selectedTask.task}
+    ${chalk.yellow('Description:')} ${selectedTask.description}
+    ${chalk.yellow('Status:')} ${selectedTask.status}`)
+
+    console.log()
+
+    const { action } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'action',
+            message: 'Select option:',
+            choices: [
+                'Change status',
+                'Edit task',
+                'Delete task',
+                'Cancel'
+            ],
+        },
+    ]);
+
+    if (action === 'Change status') {
+        console.clear()
+        console.log('Status was changed')
+        const taskStatus = selectedTask.status === 'pending' ? 'done' : 'pending'
+        changeTaskStatus(selectedTask.id, taskStatus);
+    }
+    if (action === 'Edit task') {
+        await editSelectedTask(selectedTask)
+    }
+    if (action === 'Delete task') {
+        console.clear()
+        console.log(chalk.green('Task was deleted'))
+        deleteTaskFromDb(selectedTask.id)
+    }
+    if (action === 'Cancel') {
+        console.clear()
+    }
+    
+}
+
+const markTaskFromListAsDone = async (allTasks) => {
     const { taskIndex } = await inquirer.prompt([
         {
             type: 'list',
             name: 'taskIndex',
             message: 'Select a task to amrk as done',
-            choices: allTasks.map((task, index) => ({
+            choices: allTasks.filter(task => task.status === 'pending')
+            .map((task, index) => ({
                 name: task.task,
                 value: index,
             }))
@@ -113,7 +175,34 @@ const markTaskAsDone = async (allTasks) => {
     allTasks[taskIndex].status = 'done'
 
     changeTaskStatus(allTasks[taskIndex].id, 'done')
-    console.log(chalk.green(`Task ${allTasks[taskIndex].task} was marked as done.`))
+    console.clear()
+    console.log(chalk.green(`Task "${allTasks[taskIndex].task}" was marked as done.`))
+}
+
+const editSelectedTask = async (task) => {
+    console.clear()
+
+    const { updatedTask, updatedDescription } = await inquirer.prompt([
+    {
+        type: 'input',
+        name: 'updatedTask',
+        message: 'Edit the task name:',
+        default: task.task, 
+    },
+    {
+        type: 'input',
+        name: 'updatedDescription',
+        message: 'Edit the description:',
+        default: task.description || '',
+    },
+    ])
+
+    task.task = updatedTask
+    task.description = updatedDescription
+
+    updateTaskInDb(task)
+    console.clear()
+    console.log(chalk.green(`Task was edited.`))
 }
 
 mainMenu();

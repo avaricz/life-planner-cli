@@ -11,12 +11,12 @@ db.prepare(`CREATE TABLE IF NOT EXISTS tasks (
 .run();
 
 
-export function getAllTasksFromDb() {
+export function getAllTasksFromDb () {
     const statement = db.prepare('SELECT * FROM tasks');
     return statement.all();
 }
 
-export function addTaskToDb(task, description = null, status = 'pending') {
+export function addTaskToDb (task, description = null, status = 'pending') {
     const statement = db.prepare(`
         INSERT INTO tasks (task, description, status)
         VALUES (?, ?, ?)
@@ -31,4 +31,21 @@ export function changeTaskStatus (taskId, status) {
         WHERE id = ?
         `);
         statement.run(status, taskId)
+}
+
+export function deleteTaskFromDb (taskId) {
+    const statement = db.prepare(`
+        DELETE FROM tasks
+        WHERE id = ?   
+    `);
+    statement.run(taskId)
+}
+
+export function updateTaskInDb (task) {
+    const statement = db.prepare(`
+        UPDATE tasks
+        SET task = ?, description = ?
+        WHERE id = ?
+        `)
+    statement.run(task.task, task.description, task.id)
 }
