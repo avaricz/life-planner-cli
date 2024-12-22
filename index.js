@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { addTaskToDb, getAllTasksFromDb } from './db.js';
+import { addTaskToDb, getAllTasksFromDb, changeTaskStatus } from './db.js';
 
 const mainMenu = async () => {
     console.log(chalk.blue.bold('Welcome to Life Planner CLI!'));
@@ -63,20 +63,19 @@ const viewTasks = async () => {
         return;
     }
 
-    console.log()
+    console.clear()
     console.log(chalk.yellow('Here are your tasks:'));
 
 
-    allTasks.forEach((obj, index) => {
-        const {task, description, status} = obj
+    allTasks.forEach((taskObj, index) => {
+        const {task, description, status} = taskObj
         const taskStatus = status === 'pending' ?  chalk.red('✗ Pending') : chalk.green('✓ Done');
         
         
         console.log(chalk.blueBright.bold(`${index + 1}. ${task}   ${taskStatus}`));
         if (description) {
             console.log(`   ${chalk.dim(description)}`);
-        }
-        console.log(); 
+        } 
     })
 
     const { action } = await inquirer.prompt([
@@ -111,8 +110,9 @@ const markTaskAsDone = async (allTasks) => {
             }))
         }
     ])
-
     allTasks[taskIndex].status = 'done'
+
+    changeTaskStatus(allTasks[taskIndex].id, 'done')
     console.log(chalk.green(`Task ${allTasks[taskIndex].task} was marked as done.`))
 }
 
