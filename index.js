@@ -160,23 +160,22 @@ const editTasksView = async (allTasks) => {
 }
 
 const markTaskFromListAsDone = async (allTasks) => {
-    const { taskIndex } = await inquirer.prompt([
+    const { selectedTask } = await inquirer.prompt([
         {
             type: 'list',
-            name: 'taskIndex',
+            name: 'selectedTask',
             message: 'Select a task to amrk as done',
             choices: allTasks.filter(task => task.status === 'pending')
-            .map((task, index) => ({
-                name: task.task,
-                value: index,
+            .map((task) => ({
+                name: `index: ${task.id}, name:${task.task}`,
+                value: task
             }))
         }
     ])
-    allTasks[taskIndex].status = 'done'
-
-    changeTaskStatus(allTasks[taskIndex].id, 'done')
+    
+    changeTaskStatus(selectedTask.id, 'done')
     console.clear()
-    console.log(chalk.green(`Task "${allTasks[taskIndex].task}" was marked as done.`))
+    console.log(chalk.green(`Task "${selectedTask.task}" was marked as done.`)) 
 }
 
 const editSelectedTask = async (task) => {
