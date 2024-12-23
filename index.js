@@ -121,18 +121,16 @@ ${chalk.yellow('Tasks:')} [ ${tasksForSelectedGoal}]
 
     console.log()
 
+    const choices = tasksForSelectedGoal.length > 0 
+    ? ['Edit goal', 'Append task', 'Remove task', 'Delete goal', 'Cancel', ]
+    : ['Edit goal', 'Append task', 'Delete goal', 'Cancel', ]
+
     const { action } = await inquirer.prompt([
         {
             type: 'list',
             name: 'action',
-            message: 'Select option',
-            choices: [
-                'Edit goal',
-                'Append task',
-                'Remove task',
-                'Delete goal',
-                'Cancel',
-            ]
+            message: 'Select option:',
+            choices
         }
     ])
 
@@ -149,6 +147,7 @@ ${chalk.yellow('Tasks:')} [ ${tasksForSelectedGoal}]
     if (action === 'Remove task') {
         console.clear()
         await selectTaskForRemoveFromGoal(selectedGoal)
+        await viewGoals()
     }
     if (action === 'Delete goal') {
         console.log(selectedGoal.id)
