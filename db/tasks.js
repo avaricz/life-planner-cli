@@ -1,5 +1,4 @@
-import Database from 'better-sqlite3';
-const db = new Database('./lp-cli.db');
+import db from "./db.js";
 
 db.prepare(`CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
