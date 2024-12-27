@@ -1,5 +1,5 @@
 # life-planner-cli
-#### Video Demo:  <URL HERE>
+#### Video Demo:  <URL (https://youtu.be/uGKbGeZXL0I)>
 #### Description:
 Life Planner CLI is a command-line tool designed for efficient task and goal management. It allows users to add, view, and edit tasks and goals, as well as assign tasks to specific goals. The tool provides a simple and intuitive interface using libraries like `inquirer` and `chalk` for interactivity and styled output.
 
